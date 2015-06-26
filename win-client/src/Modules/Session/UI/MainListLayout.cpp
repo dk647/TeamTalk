@@ -115,6 +115,8 @@ void MainListLayout::_LoadAllDepartment()
 	const module::DepartmentMap mapDeparments
 		= module::getUserListModule()->getAllDepartments();
 	std::vector<module::DepartmentEntity> vecDepart;//排序好的部门
+	std::vector<Node*> vecParentDepartNode;//各个父部门的node*
+	std::vector<EAUserTreeListItemInfo> vecParentDepart;
 	for (auto dep : mapDeparments)
 	{
 		vecDepart.push_back(dep.second);
@@ -124,30 +126,57 @@ void MainListLayout::_LoadAllDepartment()
 		return x.priority < y.priority;
 	});
 
+	//[dk647] 修改组织架构展示方式为父部门+二级部门
 	for (auto depart : vecDepart)
 	{
 		EAUserTreeListItemInfo item;
-		//item.id = util::stringToCString(depart.dId);//部门信息不用存储id，方便菜单判断
+		item.id = util::stringToCString(depart.dId);//部门信息不用存储id，方便菜单判断
 		item.folder = true;
 		item.empty = false;
 		item.nickName = depart.name;
-		Node* root_parent = m_EAuserTreelist->AddNode(item, NULL);
-		for (std::string uId : depart.members)
-		{
-			module::UserInfoEntity user;			
-			if (module::getUserListModule()->getUserInfoBySId(uId, user))
-			{
-				item.id = util::stringToCString(uId);
-				item.folder = false;
-				item.avatarPath = util::stringToCString(user.getAvatarPath());
-				item.nickName = user.getRealName();
-				item.description = _T("description...");
-				m_EAuserTreelist->AddNode(item, root_parent);
-			}
-			else
-			{
-				LOG__(DEBG, _T("can't find the userInfo:%s,GroupID:%s")
-					, util::stringToCString(uId), util::stringToCString(depart.dId));
+		if (util::stringToInt32(depart.parentDepartId) == 0){
+			Node* root_parent = m_EAuserTreelist->AddNode(item, NULL);
+			vecParentDepartNode.push_back(root_parent);
+			vecParentDepart.push_back(item);
+		}
+	}
+	for (auto depart : vecDepart){
+		if (util::stringToInt32(depart.parentDepartId) > 0){
+			EAUserTreeListItemInfo item;
+			item.id = util::stringToCString(depart.dId);//部门信息不用存储id，方便菜单判断
+			item.parentId = util::stringToCString(depart.parentDepartId);
+			item.folder = true;
+			item.empty = false;
+			item.nickName = depart.name;
+
+			int tmp = 0;
+			for (auto itemP : vecParentDepart){
+				if (itemP.id == item.parentId){
+					Node* root_parent = vecParentDepartNode[tmp];
+					Node* departNode = m_EAuserTreelist->AddNode(item, root_parent);
+
+					for (std::string uId : depart.members)
+					{
+						module::UserInfoEntity user;
+						if (module::getUserListModule()->getUserInfoBySId(uId, user))
+						{
+							item.id = util::stringToCString(uId);
+							item.folder = false;
+							item.avatarPath = util::stringToCString(user.getAvatarPath());
+							item.nickName = user.getRealName();
+							item.description = _T("description...");
+							m_EAuserTreelist->AddNode(item, departNode);
+						}
+						else
+						{
+							LOG__(DEBG, _T("can't find the userInfo:%s,GroupID:%s")
+								, util::stringToCString(uId), util::stringToCString(depart.dId));
+						}
+					}
+				}
+				else{
+					tmp++;
+				}
 			}
 		}
 	}

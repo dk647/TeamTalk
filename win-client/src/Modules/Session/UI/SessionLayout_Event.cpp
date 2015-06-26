@@ -16,6 +16,7 @@
 #include "../../Message/SendMsgManage.h"
 #include "../../Message/ReceiveMsgManage.h"
 #include "../Operation/SendImgHttpOperation.h"
+#include "../Operation/SendFileHttpOperation.h"
 #include "utility/Multilingual.h"
 #include "utility/utilStrCodingAPI.h"
 #include "UIIMEdit.h"
@@ -84,6 +85,24 @@ void SessionLayout::Notify(TNotifyUI& msg)
 			if (sPathName.IsEmpty())
 				return;
 			_SendImage(sPathName);
+		}
+		else if (msg.pSender == m_pBtnsendfile){
+			CFileDialog	fileDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST
+				, _T("所有 文件|*.*||"), AfxGetMainWnd());
+			fileDlg.m_ofn.Flags |= OFN_NOCHANGEDIR;
+			fileDlg.DoModal();
+
+			CString sPathName;
+			CString sFileName;
+			POSITION nPos = fileDlg.GetStartPosition();
+			if (nPos != NULL)
+			{
+				sPathName = fileDlg.GetNextPathName(nPos);
+				sFileName = fileDlg.GetFileName();
+			}
+			if (sPathName.IsEmpty())
+				return;
+			_SendFile(sPathName, sFileName);
 		}
 		else if (msg.pSender == m_pBtnbanGroupMsg)
 		{
@@ -531,6 +550,85 @@ void SessionLayout::OnSendImageCallback(std::shared_ptr<void> param)
 				msg.msgRenderType = MESSAGE_RENDERTYPE_SYSTEMTIPS;
 				ReceiveMsgManage::getInstance()->pushMessageBySId(m_sId, msg);
 				module::getSessionModule()->asynNotifyObserver(module::KEY_SESSION_NEWMESSAGE, msg.sessionId);	//传图失败
+			}
+			return;
+		}
+	}
+}
+
+//[dk647] 发送文件callback
+void SessionLayout::OnSendFileCallback(std::shared_ptr<void> param)
+{
+	m_pSendFileHttpOper = 0;
+	SendFileParam* pParam = (SendFileParam*)param.get();
+	PTR_VOID(pParam);
+
+	if (m_SendingMixedMSGList.empty())
+		return;
+
+	for (auto mixedMsgIt = m_SendingMixedMSGList.begin(); mixedMsgIt != m_SendingMixedMSGList.end(); mixedMsgIt++)
+	{
+		if (mixedMsgIt->m_fileDataVec.empty())
+		{
+			continue;
+		}
+		for (auto filedata : mixedMsgIt->m_fileDataVec)
+		{
+			if (filedata.strLocalFilePath != pParam->csFilePath)
+			{
+				continue;
+			}
+			if (SendFileParam::SENDFILE_OK == pParam->m_result)
+			{
+				mixedMsgIt->SetNetWorkPicPath(pParam->csFilePath, util::stringToCString(pParam->m_pathUrl));
+				if (mixedMsgIt->SucceedToGetAllNetWorkPic())
+				{
+					MessageEntity msg;
+					std::string msgEncrypt;
+					ENCRYPT_MSG(util::cStringToString(mixedMsgIt->MakeMixedNetWorkMSG()), msgEncrypt);
+					msg.content = msgEncrypt;
+					msg.sessionId = m_sId;
+					msg.talkerSid = module::getSysConfigModule()->userID();
+					msg.msgRenderType = MESSAGE_RENDERTYPE_TEXT;
+
+					module::SessionEntity* pSessionInfo = SessionEntityManager::getInstance()->getSessionEntityBySId(m_sId);
+					if (!pSessionInfo)
+					{
+						return;
+					}
+					if (pSessionInfo->sessionType == module::SESSION_USERTYPE)
+					{
+						msg.msgType = MSG_TYPE_TEXT_P2P;
+					}
+					else
+					{
+						msg.msgType = MSG_TYPE_TEXT_GROUP;
+					}
+					msg.msgSessionType = pSessionInfo->sessionType;	//sessionType和FromType定义一致
+					msg.msgTime = module::getSessionModule()->getTime();
+					SendMsgManage::getInstance()->pushSendingMsg(msg);
+					m_SendingMixedMSGList.erase(mixedMsgIt);
+					//更新会话时间
+					module::SessionEntity*  pSessionEntity = SessionEntityManager::getInstance()->getSessionEntityBySId(msg.sessionId);
+					if (pSessionEntity)
+					{
+						pSessionEntity->updatedTime = msg.msgTime;
+					}
+					//主界面 消息内容，时间更新
+					module::getSessionModule()->asynNotifyObserver(module::KEY_SESSION_TRAY_NEWMSGSEND, msg.sessionId);
+				}
+			}
+			else
+			{
+				LOG__(ERR, _T("STRID_SESSIONMODULE_MESSAGE_FILEFAILED:%d"), pParam->m_result);
+				m_SendingMixedMSGList.erase(mixedMsgIt);
+				MessageEntity msg;
+				msg.content = util::cStringToString(util::getMultilingual()->getStringById(_T("STRID_SESSIONMODULE_MESSAGE_FILEFAILED")));
+				msg.sessionId = m_sId;
+				msg.talkerSid = module::getSysConfigModule()->userID();
+				msg.msgRenderType = MESSAGE_RENDERTYPE_SYSTEMTIPS;
+				ReceiveMsgManage::getInstance()->pushMessageBySId(m_sId, msg);
+				module::getSessionModule()->asynNotifyObserver(module::KEY_SESSION_NEWMESSAGE, msg.sessionId);	//传文件失败
 			}
 			return;
 		}

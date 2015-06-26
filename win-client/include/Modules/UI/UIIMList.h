@@ -25,6 +25,7 @@ public:
 	CDuiString avatarPath;
 	CDuiString nickName;
 	CDuiString description;
+	CDuiString parentId;
 };
 
 /******************************************************************************/

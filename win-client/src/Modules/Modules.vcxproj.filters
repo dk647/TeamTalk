@@ -552,6 +552,7 @@
     <ClCompile Include="Emotion\EmoCfgParseTool.cpp">
       <Filter>Emotion</Filter>
     </ClCompile>
+    <ClCompile Include="Session\Operation\SendFileHttpOperation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Modules.h">
@@ -881,6 +882,7 @@
     <ClInclude Include="Emotion\EmoCfgParseTool.h">
       <Filter>Emotion</Filter>
     </ClInclude>
+    <ClInclude Include="Session\Operation\SendFileHttpOperation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Modules.def">

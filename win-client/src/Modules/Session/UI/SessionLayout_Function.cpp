@@ -17,6 +17,7 @@
 #include "../../Message/ReceiveMsgManage.h"
 #include "../../Message/SendMsgManage.h"
 #include "../Operation/SendImgHttpOperation.h"
+#include "../Operation/SendFileHttpOperation.h"
 #include "../SessionManager.h"
 #include "json/reader.h"
 #include "json/writer.h"
@@ -62,6 +63,15 @@ void SessionLayout::_SendSessionMsg(IN MixedMsg mixMsg)
 			m_pSendImgHttpOper = new SendImgHttpOperation(param
 				, BIND_CALLBACK_1(SessionLayout::OnSendImageCallback));
 			module::getHttpPoolModule()->pushHttpOperation(m_pSendImgHttpOper, TRUE);
+		}
+		for (ST_fileData& fileData : mixMsg.m_fileDataVec)
+		{
+			//文件需要上传
+			SendFileParam param;
+			param.csFilePath = fileData.strLocalFilePath;
+			m_pSendFileHttpOper = new SendFileHttpOperation(param
+				, BIND_CALLBACK_1(SessionLayout::OnSendFileCallback));
+			module::getHttpPoolModule()->pushHttpOperation(m_pSendFileHttpOper, TRUE);
 		}
 		m_SendingMixedMSGList.push_back(mixMsg);
 	}

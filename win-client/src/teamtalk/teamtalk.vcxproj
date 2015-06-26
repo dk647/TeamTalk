@@ -91,6 +91,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\;$(SolutionDir)..\include;$(SolutionDir)..\include\utility;$(SolutionDir)..\3rdParty\src\json\include\;$(SolutionDir)..\3rdParty\src;$(SolutionDir)..\3rdParty\include;$(SolutionDir)\..\..\;$(SolutionDir)\..\core;$(SolutionDir)\..\..\TTServer\cpp</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -151,7 +152,9 @@
     <Xml Include="..\..\bin\teamtalk\gui\EmotionDialog\QSBFace.xml" />
     <Xml Include="..\..\bin\teamtalk\gui\FileTransferDialog\FileTransferDialog.xml" />
     <Xml Include="..\..\bin\teamtalk\gui\FileTransferDialog\FileTransferListItem.xml" />
-    <Xml Include="..\..\bin\teamtalk\gui\LoginDialog\LoginDialog.xml" />
+    <Xml Include="..\..\bin\teamtalk\gui\LoginDialog\LoginDialog.xml">
+      <SubType>Designer</SubType>
+    </Xml>
     <Xml Include="..\..\bin\teamtalk\gui\MainDialog\eaUserListItem.xml" />
     <Xml Include="..\..\bin\teamtalk\gui\MainDialog\groupListItem.xml" />
     <Xml Include="..\..\bin\teamtalk\gui\MainDialog\MainDialog.xml" />

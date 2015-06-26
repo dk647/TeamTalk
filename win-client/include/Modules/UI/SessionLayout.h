@@ -72,6 +72,7 @@ public:
 	void DoDisplayHistoryMsgToIE(std::vector<MessageEntity>& msgList, BOOL scrollBottom);
 
 	void OnSendImageCallback(std::shared_ptr<void> param);//发送图片返回
+	void OnSendFileCallback(std::shared_ptr<void> param);//发送图片返回
 private:
 	/**
 	 * 展示群成员
@@ -88,6 +89,7 @@ private:
 	void _DisplaySysMsg(IN CString strID);
 	void _SendSessionMsg(IN MixedMsg mixMsg);//投递消息
 	void _SendImage(CString& csFilePath);
+	void _SendFile(CString& csFilePath);
 	void _CreateMenu(IN const TNotifyUI& msg);
 	void _GetGroupNameListByShortName(IN const CString& sShortName, OUT std::vector<string>& nameList);
 
@@ -134,6 +136,7 @@ public:
 	BOOL					m_bGroupSession;					//作为输入状态判断用，群是不需要发状态的
 	BOOL					m_bWritingTimerExist;				//正在输入的timer是否存在
 	module::IHttpOperation*	m_pSendImgHttpOper = 0;
+	module::IHttpOperation*	m_pSendFileHttpOper = 0;
 };
 /******************************************************************************/
 #endif// SESSIONLAYOUT_6BC9730E_47F6_4BCB_936D_AC034AA10DFF_H__

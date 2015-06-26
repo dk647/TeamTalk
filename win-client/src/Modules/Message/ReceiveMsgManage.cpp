@@ -26,6 +26,8 @@ namespace
 	const CString HTML_IMG_EMOTION_YAYA_TAG = _T("<img src=\"%s\" width=\"64\" height=\"70\" />");
 	const CString HTML_IMG_IMAGE_TAG
 		= _T("<a href=\"%s\" target=\"_blank\"><img title=\"%s\" src=\"%s\" style=\"max-width:%dpx;\" /></a>");
+	//[dk647] 文件消息展示
+	const CString HTML_A_DKFILE_TAG = _T("<a href=\"%s\" target=\"_blank\">%s</a>");
 	const CString HTML_A_TAG = _T("<a class=\"purple_link\" href=\"%s\" target=\"_blank\">%s</a>");
 	const CString HTML_CHAT2_TAG = _T("<a class=\"blue_link\" href=\"moguim://moguim/:chat2?%s\" target=\"_blank\">@%s</a>");//替换成连接
 	const UInt8 MAX_RECEIVEMSG_CNT = 10;	//消息去重，每个会话缓存10条信息
@@ -303,6 +305,35 @@ void ReceiveMsgManage::parseContent(CString& content, BOOL bFloatForm, Int32 cha
 		}
 		content.Replace(csImgPathTag, csHtml);
 		startIndex = content.Find(CS_SPLIT_CODE_START, endIndex);
+	}
+
+	//【dk647】替换文件
+	bCanRelaceSpace = TRUE;
+	startIndex = content.Find(CS_SPLIT_CODE_FILE_START);
+	while (startIndex != -1)
+	{
+		int endIndex = content.Find(CS_SPLIT_CODE_FILE_END, startIndex);
+		if (-1 == endIndex)
+			break;
+		CString csImgUrlPath = content.Mid(startIndex + CS_SPLIT_CODE_FILE_START.GetLength(), endIndex
+			- startIndex - CS_SPLIT_CODE_FILE_START.GetLength());
+		CString csImgPathTag = content.Mid(startIndex, endIndex - startIndex + CS_SPLIT_CODE_FILE_END.GetLength());
+		Int32 fileNamePos = csImgUrlPath.ReverseFind('\\');
+		CString csFileName = csImgUrlPath.Mid(fileNamePos + 1, endIndex - fileNamePos);
+		CString csHtml;
+		if (bFloatForm)
+		{
+			csHtml = util::getMultilingual()->getStringById(_T("STRID_FLOATFORM_FILE"));
+		}
+		else
+		{
+			chatWidth -= 130;
+			CString csTips = util::getMultilingual()->getStringById(_T("STRID_SESSIONMODULE_MESSAGE_SOURCEIMAGE"));
+			module::TTConfig* pCfg = module::getSysConfigModule()->getSystemConfig();
+			csHtml.Format(HTML_A_DKFILE_TAG, csImgUrlPath, csFileName, chatWidth);
+		}
+		content.Replace(csImgPathTag, csHtml);
+		startIndex = content.Find(CS_SPLIT_CODE_FILE_START, endIndex);
 	}
 	_urlReplace(content);
 	_Quickchat2Fromat(content);

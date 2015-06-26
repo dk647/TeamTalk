@@ -543,6 +543,7 @@
     <ClCompile Include="P2PCmd\P2PCmdModule_Impl.cpp" />
     <ClCompile Include="Session\ISessionModule.cpp" />
     <ClCompile Include="Session\Operation\DownloadAvatarHttpOperation.cpp" />
+    <ClCompile Include="Session\Operation\SendFileHttpOperation.cpp" />
     <ClCompile Include="Session\Operation\SendImgHttpOperation.cpp" />
     <ClCompile Include="Session\Operation\SyncTimerTimer.cpp" />
     <ClCompile Include="Session\SessionManager.cpp" />
@@ -670,6 +671,7 @@
     <ClInclude Include="P2PCmd\P2PCmdModule_Impl.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Session\Operation\DownloadAvatarHttpOperation.h" />
+    <ClInclude Include="Session\Operation\SendFileHttpOperation.h" />
     <ClInclude Include="Session\Operation\SendImgHttpOperation.h" />
     <ClInclude Include="Session\Operation\SyncTimerTimer.h" />
     <ClInclude Include="Session\SessionManager.h" />

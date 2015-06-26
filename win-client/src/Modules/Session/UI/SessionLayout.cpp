@@ -427,6 +427,32 @@ void SessionLayout::_SendImage(CString& csFilePath)
 	_DisplayMsgToIE(msg);
 }
 
+//[dk647] 发送文件
+void SessionLayout::_SendFile(CString& csFilePath, CString& csFileName)
+{
+	//构造文件消息
+	ST_fileData fileData;
+	fileData.nPos = 0;
+	fileData.strLocalFilePath = csFilePath;
+	fileData.strFileName = csFileName;
+	MixedMsg mixMsg;
+	mixMsg.m_fileDataVec.push_back(fileData);
+	//发送文件
+	_SendSessionMsg(mixMsg);
+
+	//本地消息展现
+	MessageEntity msg;
+	msg.msgType = MSG_TYPE_TEXT_P2P;
+	msg.talkerSid = module::getSysConfigModule()->userID();
+	msg.sessionId = m_sId;
+	msg.msgRenderType = MESSAGE_RENDERTYPE_TEXT;
+	msg.msgStatusType = MESSAGE_TYPE_RUNTIME;
+	msg.content = util::cStringToString(mixMsg.MakeMixedLocalMSG());
+	msg.msgTime = module::getSessionModule()->getTime();
+	_DisplayMsgToIE(msg);
+}
+
+
 
 
 

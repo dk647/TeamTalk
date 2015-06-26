@@ -22,6 +22,14 @@ CString MixedMsg::AddPicTeg2Pic(IN CString picPath)
 	strAddedMSG += CS_SPLIT_CODE_END;
 	return strAddedMSG;
 }
+CString MixedMsg::AddFileTeg2File(IN CString filePath)
+{
+	CString strAddedMSG;
+	strAddedMSG += CS_SPLIT_CODE_FILE_START;
+	strAddedMSG += filePath;
+	strAddedMSG += CS_SPLIT_CODE_FILE_END;
+	return strAddedMSG;
+}
 
 MixedMsg::MixedMsg()
 :m_nSetNetWorkPathSuccTime(0)
@@ -40,12 +48,21 @@ BOOL MixedMsg::SetNetWorkPicPath(IN CString strLocalPicPath, IN CString strNetPi
 			return TRUE;
 		}
 	}
+	for (auto& fileData : m_fileDataVec)
+	{
+		if (fileData.strLocalFilePath == strLocalPicPath)
+		{
+			fileData.strNetFilePath = strNetPicPath;
+			m_nSetNetWorkPathSuccTime++;
+			return TRUE;
+		}
+	}
 	return FALSE;
 }
 
 BOOL MixedMsg::SucceedToGetAllNetWorkPic()
 {
-	return m_nSetNetWorkPathSuccTime == m_picDataVec.size();
+	return m_nSetNetWorkPathSuccTime == m_picDataVec.size() + m_fileDataVec.size();
 }
 
 CString MixedMsg::MakeMixedLocalMSG()
@@ -58,6 +75,15 @@ CString MixedMsg::MakeMixedLocalMSG()
 		msg.Insert(nPosAdd + picData.nPos, strPic.GetBuffer());
 		strPic.ReleaseBuffer();
 		nPosAdd += strPic.GetLength();
+	}
+	for (auto fileData : m_fileDataVec)
+	{
+		CString strPic = AddFileTeg2File(fileData.strLocalFilePath);
+		msg.Insert(nPosAdd + fileData.nPos, strPic.GetBuffer());
+		strPic.ReleaseBuffer();
+		msg.Delete(nPosAdd + fileData.nPos + strPic.GetLength());
+		nPosAdd += strPic.GetLength();
+		--nPosAdd;
 	}
 	return msg;
 }
@@ -75,12 +101,21 @@ CString MixedMsg::MakeMixedNetWorkMSG()
 		nPosAdd += strPic.GetLength();
 		--nPosAdd;
 	}
+	for (auto fileData : m_fileDataVec)
+	{
+		CString strPic = AddFileTeg2File(fileData.strNetFilePath);
+		msg.Insert(nPosAdd + fileData.nPos, strPic.GetBuffer());
+		strPic.ReleaseBuffer();
+		msg.Delete(nPosAdd + fileData.nPos + strPic.GetLength());
+		nPosAdd += strPic.GetLength();
+		--nPosAdd;
+	}
 	return msg;
 }
 
 BOOL MixedMsg::IsPureTextMsg()
 {
-	return m_picDataVec.empty();
+	return m_picDataVec.empty() && m_fileDataVec.empty();
 }
 
 /******************************************************************************/

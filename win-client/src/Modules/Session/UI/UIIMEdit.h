@@ -26,6 +26,8 @@ namespace
 {
 	const CString CS_SPLIT_CODE_START = _T("&$#@~^@[{:");
 	const CString CS_SPLIT_CODE_END = _T(":}]&$~@#@");
+	const CString CS_SPLIT_CODE_FILE_START = _T("&$#@~^@dkfile[{:");
+	const CString CS_SPLIT_CODE_FILE_END = _T(":}]filedk&$~@#@");
 }
 struct ST_picData
 {
@@ -33,7 +35,13 @@ struct ST_picData
 	CString strLocalPicPath;
 	CString strNetPicPath;
 };
-
+struct ST_fileData
+{
+	UINT32 nPos;
+	CString strLocalFilePath;
+	CString strNetFilePath;
+	CString strFileName;
+};
 class MixedMsg
 {
 public:
@@ -44,9 +52,11 @@ public:
 	CString MakeMixedNetWorkMSG();
 	BOOL IsPureTextMsg();
 	static CString AddPicTeg2Pic(IN CString picPath);
+	static CString AddFileTeg2File(IN CString filePath);
 public:
-	CString					m_strTextData;					//文字
-	std::vector<ST_picData>	m_picDataVec;				//图片所在文字中的位置，图片的本地路径；图片的网络路径
+	CString						m_strTextData;					//文字
+	std::vector<ST_picData>		m_picDataVec;				//图片所在文字中的位置，图片的本地路径；图片的网络路径
+	std::vector<ST_fileData>	m_fileDataVec;				//文件所在文字中的位置，文件的本地路径；文件的网络路径
 private:
 	UINT32					m_nSetNetWorkPathSuccTime;	//成功获得的图片的次数
 };
